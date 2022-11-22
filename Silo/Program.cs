@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Orleans.Configuration;
 
 using Orleans.Runtime;
+using Silo.Config;
 
 try
 {
@@ -22,6 +24,17 @@ catch (Exception ex)
 
 static async Task<IHost> StartSiloAsync()
 {
+    var config = new ConfigurationBuilder()
+           .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+           .AddJsonFile("appsettings.json")
+           .AddUserSecrets<Program>()
+           .Build();
+
+
+    var s = config.GetValue<string>("Settings:Test");
+
+    var settings = config.GetSection(Settings.SettingsName).Get<Settings>();
+
 
     var builder = new HostBuilder()
         .UseOrleans(c =>
@@ -29,7 +42,7 @@ static async Task<IHost> StartSiloAsync()
             c.UseLocalhostClustering()
             .AddAzureTableGrainStorage(name: "SimpleTableStorage1", o =>
             {
-                o.ConfigureTableServiceClient("UseDevelopmentStorage=true");
+                o.ConfigureTableServiceClient(settings.SimpleTableStorage);
             })
             .Configure<ClusterOptions>(options =>
             {
