@@ -42,8 +42,11 @@ namespace Grains
         }
     }
 
+
+    [GenerateSerializer]
     public class HelloGrainState
     {
+        [Id(0)]
         public string LastMessage { get; set; }
     }
 }
